@@ -418,12 +418,12 @@ async function getGames(query, { clientId, accessToken }) {
     // https://api-docs.igdb.com/#game
     // https://api-docs.igdb.com/#expander
     body: `fields franchises.name, websites.url, keywords.name,
-					platforms.name, first_release_date, involved_companies.developer,
-					involved_companies.company.name, involved_companies.company.logo.url,
-					url, cover.url, genres.name, game_modes.name, storyline, name, alternative_names.name;
-				search "${query}";
-				limit 15;
-			`,
+          platforms.name, first_release_date, involved_companies.developer,
+          involved_companies.company.name, involved_companies.company.logo.url,
+          url, cover.url, genres.name, game_modes.name, storyline, name, alternative_names.name;
+        search "${query}";
+        limit 15;
+      `,
   });
 
   return JSON.parse(res);
