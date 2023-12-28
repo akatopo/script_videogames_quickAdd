@@ -13,6 +13,7 @@ const GRANT_TYPE = 'client_credentials';
 const API_CLIENT_ID_OPTION = 'IGDB API Client ID';
 const API_CLIENT_SECRET_OPTION = 'IGDB API Client secret';
 const POSTER_SAVE_PATH_OPTION = 'Vault directory path for game posters';
+const USE_CLIPBOARD_DATA_OPTION = 'Use clipboard data for game search';
 
 let app;
 let obsidian;
@@ -38,6 +39,10 @@ module.exports = {
         type: 'text',
         defaultValue: '',
         placeholder: 'ex. Games/posters',
+      },
+      [USE_CLIPBOARD_DATA_OPTION]: {
+        type: 'checkbox',
+        defaultValue: false,
       },
     },
   },
@@ -75,18 +80,36 @@ async function start(params, settings) {
     [API_CLIENT_ID_OPTION]: clientId,
     [API_CLIENT_SECRET_OPTION]: clientSecret,
     [POSTER_SAVE_PATH_OPTION]: posterBasePath,
+    [USE_CLIPBOARD_DATA_OPTION]: shouldUseClipboard,
   } = settings;
 
   const { configDir } = app.vault;
   const { normalizePath } = obsidian;
+  const { getClipboard } = quickAddApi.utility;
   const tokenPath = normalizePath(`${configDir}/igdbToken.json`);
+  const queryPlaceholders = [
+    'Leisure Suit Larry: Love for Sail!',
+    'Cyberpunk 2077',
+    'Shenmue',
+    'Super Mario Bros. 3',
+    'Daikatana',
+    'Quake',
+  ];
+  const queryPlaceholder =
+    queryPlaceholders[
+      Math.floor(Math.random() * (queryPlaceholders.length - 1))
+    ];
 
   const accessToken = await executeReadOrRefreshAccessToken(tokenPath, {
     clientId,
     clientSecret,
   });
 
-  const query = await quickAddApi.inputPrompt('Enter video game title: ');
+  const query = await quickAddApi.inputPrompt(
+    'Enter video game title: ',
+    `ex. ${queryPlaceholder}`,
+    shouldUseClipboard ? (await getClipboard()).trim() : '',
+  );
   if (!query) {
     noticeAndThrow('No query entered.');
   }
