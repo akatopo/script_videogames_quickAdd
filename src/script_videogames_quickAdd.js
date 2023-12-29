@@ -160,7 +160,7 @@ async function start(params, settings) {
     gameModes: (_, { game_modes }) => listFromNameProp(game_modes),
     developer: (_, { involved_companies }) => {
       const developer = getDeveloper(involved_companies).trim();
-      return developer ? `"[[${sanitizeFilename(developer)}]]"` : ' ';
+      return developer ? `'[[${sanitizeFilename(developer)}]]'` : ' ';
     },
     templateDeveloper: (_, { involved_companies }) =>
       getDeveloper(involved_companies),
