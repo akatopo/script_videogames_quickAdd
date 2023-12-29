@@ -68,7 +68,7 @@ You can now use the macro to create notes with game information in your vault !
 
 ### Example template
 
-Please also find a definition of the variables used in this template below (see : [Template variables definitions](#template-variables-definitions)).
+Please also find a definition of the variables used in this template below (see : [Template variable definitions](#template-variable-definitions)).
 
 ```
 ---
