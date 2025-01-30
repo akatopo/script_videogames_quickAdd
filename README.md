@@ -97,6 +97,10 @@ websites: {{VALUE:websites}}
 
 {{VALUE:templatePoster}}
 
+## Summary
+
+{{VALUE:templateSummary}}
+
 ## Storyline
 
 {{VALUE:templateStoryline}}
@@ -141,5 +145,6 @@ Please find here a definition of the possible variables to be used in your templ
 | `releaseDate`       | The game's release date in `YYYY-MM-DD` format (if available).                                                                                                                                                  |
 | `websites`          | A list of websites related to the game (if available). For use in properties.                                                                                                                                   |
 | `templateStoryline` | The game's storyline (if available), newlines removed for use in the note body.                                                                                                                                 |
+| `templateSummary`   | The game's summary (if available), newlines removed for use in the note body.                                                                                                                                   |
 | `posterPath`        | The vault path where the game's poster was downloaded (if successful).                                                                                                                                          |
 | `templatePoster`    | Either an embed using the downloaded poster path or an inline link with the poster url if the former failed, for use in the note body.                                                                          |
