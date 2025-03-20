@@ -15,6 +15,13 @@ const API_CLIENT_SECRET_OPTION = 'IGDB API Client secret';
 const POSTER_SAVE_PATH_OPTION = 'Vault directory path for game posters';
 const USE_CLIPBOARD_DATA_OPTION = 'Use clipboard data for game search';
 
+const gameFields = `franchises.name, websites.url, keywords.name,
+  platforms.name, first_release_date, involved_companies.developer,
+  involved_companies.company.name, involved_companies.company.logo.url,
+  url, cover.url, genres.name, game_modes.name, storyline, summary, name, alternative_names.name`;
+
+const idRegex = /^[1-9]\d*$/;
+
 let app;
 let obsidian;
 let quickAddApi;
@@ -106,8 +113,8 @@ async function start(params, settings) {
   });
 
   const query = await quickAddApi.inputPrompt(
-    'Enter video game title: ',
-    `ex. ${queryPlaceholder}`,
+    'Enter video game title or an IGDB game id: ',
+    `ex. ${queryPlaceholder} or 1217`,
     shouldUseClipboard ? (await getClipboard()).trim() : '',
   );
   if (!query) {
@@ -230,7 +237,7 @@ async function executeQuery(
   };
 
   try {
-    return await getGames(query, { clientId, accessToken });
+    return await fetchGames(query, { clientId, accessToken });
   } catch (error) {
     processError(error);
   }
@@ -241,7 +248,7 @@ async function executeQuery(
       clientSecret,
       tokenPath,
     });
-    return await getGames(query, {
+    return await fetchGames(query, {
       clientId,
       accessToken: newAccessToken,
     });
@@ -406,7 +413,40 @@ async function getAccessToken({ clientId, clientSecret }) {
   return JSON.parse(res);
 }
 
-async function getGames(query, { clientId, accessToken }) {
+async function fetchGames(query, credentials) {
+  const shouldGetGameById = idRegex.test(query);
+
+  const res = await Promise.all([
+    shouldGetGameById ? getGameById(query, credentials) : [],
+    searchGames(query, credentials),
+  ]);
+
+  return res.flat();
+}
+
+async function getGameById(idLike, credentials) {
+  const body = `fields ${gameFields};
+    where id = ${idLike};
+  `;
+  try {
+    return await queryGames(body, credentials);
+  } catch (error) {
+    // id not in igdb(?) or invalid id
+    if (error?.status === 400) {
+      return [];
+    }
+  }
+}
+
+async function searchGames(query, credentials) {
+  const body = `fields ${gameFields};
+    search "${query}";
+    limit 30;
+  `;
+  return await queryGames(body, credentials);
+}
+
+async function queryGames(body, { clientId, accessToken }) {
   const res = await request({
     url: API_URL,
     method: 'POST',
@@ -419,13 +459,7 @@ async function getGames(query, { clientId, accessToken }) {
     // https://api-docs.igdb.com/#examples
     // https://api-docs.igdb.com/#game
     // https://api-docs.igdb.com/#expander
-    body: `fields franchises.name, websites.url, keywords.name,
-          platforms.name, first_release_date, involved_companies.developer,
-          involved_companies.company.name, involved_companies.company.logo.url,
-          url, cover.url, genres.name, game_modes.name, storyline, summary, name, alternative_names.name;
-        search "${query}";
-        limit 15;
-      `,
+    body,
   });
 
   return JSON.parse(res);
