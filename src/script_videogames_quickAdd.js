@@ -168,7 +168,9 @@ async function start(params, settings) {
     developer: (_, { involved_companies }) => {
       const developer = getDeveloper(involved_companies).trim();
       return developer
-        ? `'[[${escapeSingleQuotedYamlString(sanitizeFilename(developer))}]]'`
+        ? `'[[${escapeSingleQuotedYamlString(
+            aliasIfNeeded(sanitizeFilename(developer), developer),
+          )}]]'`
         : ' ';
     },
     templateDeveloper: (_, { involved_companies }) =>
@@ -349,7 +351,9 @@ function formatList(list, linkify = true) {
   }
   const decorate = (s) =>
     linkify
-      ? `'[[${escapeSingleQuotedYamlString(sanitizeFilename(s.trim()))}]]'`
+      ? `'[[${escapeSingleQuotedYamlString(
+          aliasIfNeeded(sanitizeFilename(s.trim()), s.trim()),
+        )}]]'`
       : `'${escapeSingleQuotedYamlString(s.trim())}'`;
 
   return `\n${list.map((item) => `  - ${decorate(item)}`).join('\n')}`;
@@ -361,6 +365,14 @@ function sanitizeFilename(string) {
 
 function escapeSingleQuotedYamlString(s) {
   return s.replaceAll("'", "''");
+}
+
+function aliasIfNeeded(sanitized, original) {
+  if (sanitized === original) {
+    return sanitized;
+  }
+
+  return `${sanitized}|${original.replaceAll('|', '')}`;
 }
 
 async function tryReadAccessTokenFromVault(tokenPath) {
