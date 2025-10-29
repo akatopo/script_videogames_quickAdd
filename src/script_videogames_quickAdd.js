@@ -59,6 +59,9 @@ module.exports = {
 const getReleaseYear = (releaseDate) =>
   releaseDate ? new Date(releaseDate * 1000).getFullYear() : ' ';
 
+const getReleaseYearString = (releaseYear) =>
+  typeof releaseYear === 'number' ? ` (${releaseYear})` : '';
+
 const getReleaseDate = (releaseDate) =>
   releaseDate ? moment(releaseDate * 1000).format('YYYY-MM-DD') : ' ';
 
@@ -149,9 +152,9 @@ async function start(params, settings) {
     igdbUrl: 'url',
     igdbId: 'id',
     fileName: (_, { name, first_release_date }) => {
-      const releaseYear = getReleaseYear(first_release_date);
-      const releaseYearStr =
-        typeof releaseYear === 'number' ? ` (${releaseYear})` : '';
+      const releaseYearStr = getReleaseYearString(
+        getReleaseYear(first_release_date),
+      );
 
       return sanitizeFilename(`${name}${releaseYearStr}`);
     },
@@ -162,8 +165,16 @@ async function start(params, settings) {
       listFromNameProp(
         f?.map((item) => ({ ...item, name: `${item.name} (Franchise)` })) ?? [],
       ),
-    aliases: (_, { name, alternative_names = [] }) =>
-      listFromNameProp([...alternative_names, { name }], false),
+    aliases: (_, { name, first_release_date, alternative_names = [] }) => {
+      const releaseYearStr = getReleaseYearString(
+        getReleaseYear(first_release_date),
+      );
+
+      return listFromNameProp(
+        [...alternative_names, { name }, { name: `${name}${releaseYearStr}` }],
+        false,
+      );
+    },
     gameModes: (_, { game_modes }) => listFromNameProp(game_modes),
     developer: (_, { involved_companies }) => {
       const developer = getDeveloper(involved_companies).trim();
